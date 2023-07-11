@@ -1,0 +1,51 @@
+import java.math.BigDecimal;
+import java.util.*;
+abstract class Employee {
+    Employee(String name) {
+        this.name = name;
+    }
+    final String name;
+}
+class SalariedEmployee extends Employee {
+    SalariedEmployee(String name, BigDecimal salary) {
+        super(name);
+        this.salary = salary;
+    }
+    public String toString() {
+        return getClass().getSimpleName() + " " + name + " " + salary;
+    }
+    final BigDecimal salary;
+}
+class HourlyEmployee extends Employee {
+    HourlyEmployee(String name, BigDecimal hourlyRate) {
+        super(name);
+        this.hourlyRate = hourlyRate;
+    }
+    public String toString() {
+        return getClass().getSimpleName() + " " + name + " " + hourlyRate;
+    }
+    final BigDecimal hourlyRate;
+}
+class CommissionEmployee extends Employee {
+    CommissionEmployee(String name, BigDecimal percentage) {
+        super(name);
+        this.percentage = percentage;
+    }
+    public String toString() {
+        return getClass().getSimpleName() + " " + name + " " + percentage + "%";
+    }
+    final BigDecimal percentage;
+}
+class Manager {
+    public String toString() {
+        return Arrays.asList(employees).toString();
+    }
+    Employee[] employees = new Employee[] { new SalariedEmployee("joe", BigDecimal.valueOf(4567.89)),
+            new HourlyEmployee("mary", BigDecimal.valueOf(12.34)),
+            new CommissionEmployee("bob", BigDecimal.valueOf(12.34)) };
+}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println(new Manager());
+    }
+}
