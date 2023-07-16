@@ -5,6 +5,8 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.Optional;
+
 @Controller
 public class CustomerController {
     private CustomerRepository customerRepo ;
@@ -31,8 +33,17 @@ public class CustomerController {
         return this.customerRepo.save(customerInput.getCustomerEntity());
     }
     /*@MutationMapping
-    public Customer updateCustomer(@Argument (name = " input") UpdateCustomer updateCustomer){
-
-        return this.customerRepo.save(updateCustomer.getCustomerEntity());
+    public Customer updateCustomer(@Argument long id,String firstName ,String lastName , String email ,String website ){
+        Customer c = new Customer(id,firstName,lastName,email,website);
+        //Optional<Customer> check = customerRepo.findById(id).ifPresentOrElse();
+        if(customerRepo.findById(id).isPresent()){
+            customerRepo.deleteById(id);
+            return this.customerRepo.save(c);
+        }
+        else{
+            return this.customerRepo.save(c);
+        }
     }*/
+
+
 }

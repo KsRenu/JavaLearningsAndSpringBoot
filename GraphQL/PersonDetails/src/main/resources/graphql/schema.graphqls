@@ -10,8 +10,6 @@ type Query{
     customerById(id:ID): Customer
     customers : [Customer]!
     customerByEmail(email: String): Customer
-
-
 }
 input CustomerInput{
     firstName: String!
@@ -20,14 +18,9 @@ input CustomerInput{
     website: String!
 }
 
-#input UpdateCustomer{
-#    firstName: String
-#    lastName: String
-#    email: String
-#    website: String
-#}
 
 type Mutation{
     addCustomer(input:CustomerInput): Customer!
-#    updateCustomer(id: ID): Customer
+    #updateCustomer(id:ID,firstName: String,lastName: String, email: String, website: String): Customer!
+
 }

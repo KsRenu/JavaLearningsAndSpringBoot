@@ -19,6 +19,17 @@ public class Customer {
     @Column
     private String website;
 
+    public Customer(long id, String firstName, String lastName, String email, String website) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.website = website;
+    }
+
+    public Customer() {
+    }
+
     public long getId() {
         return id;
     }
