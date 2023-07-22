@@ -1,0 +1,46 @@
+type User{
+    id:ID!
+    name: String!
+    mail: String!
+    company: String!
+    website: String!
+    status : String!
+}
+type Cred{
+    id:ID!
+    email: String!
+    password: String!
+}
+
+input UserInput{
+    id:String
+    name: String
+    mail:String
+    company:String
+    website:String
+    status:String
+}
+
+type Query{
+    users:[User]!
+    findUserByStatus(status: String,pageNo: String, size: String): [User]!
+    findUserById(id: String): User!
+
+
+
+
+
+    ImgetStatus(status: String,pageNo: String, size: String):[User]!
+    removeRepeatedDomainUsers:[User]
+}
+
+type Mutation{
+    addUsers:[User]!
+    createUser(input:UserInput):User!
+    updateUser(id:String,name: String,mail:String,company:String,website:String,status:String):User!
+    deleteUser(id:String):Boolean
+
+    removeUserWithDomain(domain: String):Boolean
+    createDistinctUser(id:String,name: String,mail:String,company:String,website:String,status:String):Boolean
+
+}
