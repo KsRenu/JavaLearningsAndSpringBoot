@@ -7,15 +7,14 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import java.util.Random;
+
+import java.util.*;
+
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Controller
 public class UserController {
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
 
     public UserController(UserRepo userRepo) {
         this.userRepo = userRepo;
@@ -52,21 +51,27 @@ public class UserController {
     }
 
     @QueryMapping
-    public Iterable<User> ImgetStatus(@Argument String status,@Argument String pageNo,@Argument String size){
+    public List<User> ImgetStatus(@Argument String status,@Argument String pageNo,@Argument String size){
         List<User> u = new ArrayList<>();
+        Pageable element;
         u = this.userRepo.findAll();
         int count = (int) u.stream().filter(user -> (user.getStatus()).equals(status)).count();
 
-        List<User> userStatus = u.stream().filter(user -> (user.getStatus()).equals(status)).collect(Collectors.toList());
+        List<User> userStatus = u.stream().filter(user -> (user.getStatus()).equals(status)).toList();
         log.info("No of users in this status are : {}",count);
-        Pageable firstPageWithTwoElements = PageRequest.of(Integer.parseInt(pageNo), Integer.parseInt(size));
-        //return userStatus;
+        if( (pageNo!=null ) && (size!=null)) {
+            element = PageRequest.of(Integer.parseInt(pageNo), Integer.parseInt(size));
+                        //return userStatus;
+        }
+        else{
+            element = PageRequest.of(0, 10);
+        }
 
-        return userRepo.findUserByStatus(status,firstPageWithTwoElements);
+        return userRepo.findUserByStatus(status,element);
     }
 
     @QueryMapping
-    public Iterable<User> removeRepeatedDomainUsers(){
+    public List<User> removeRepeatedDomainUsers(){
         List<User> u = new ArrayList<>();
         u = this.userRepo.findAll();
         String domain;
@@ -83,24 +88,24 @@ public class UserController {
         }
         boolean f = true;
         int x=0;
-        for(int i=0;i<distinctDomains.size();i++){
-            f=true;
+        for (String distinctDomain : distinctDomains) {
+            f = true;
             //x=0;
-            for (User mail:u) {
-            //for(int j=0;j<u.size();j++){
+            for (User mail : u) {
+                //for(int j=0;j<u.size();j++){
                 //index = u.get(j).getMail().indexOf('@');
                 index = mail.getMail().indexOf('@');
                 //if(u.get(j).getMail().substring(index).equals(distinctDomains.get(i))){
-                if(mail.getMail().substring(index).equals(distinctDomains.get(i))){
+                if (mail.getMail().substring(index).equals(distinctDomain)) {
                     //u.remove(mail);
-                    if(f){
-                    f=false;
-                    unew.add(mail);
-                    //x++;
-                     }
+                    if (f) {
+                        f = false;
+                        unew.add(mail);
+                        //x++;
+                    }
                     //else {
-                       // u.set(x,null);
-                       // x++;
+                    // u.set(x,null);
+                    // x++;
                     //}
                 }
 
@@ -109,7 +114,7 @@ public class UserController {
         }
         this.userRepo.deleteAll();
 
-        u= u.stream().filter(user -> (unew.contains(user))).toList();
+        u= u.stream().filter(unew::contains).toList();
         log.info("No.of.distinct domain users are: {}",u.size());
 
         return  this.userRepo.saveAll(u);
@@ -170,10 +175,8 @@ public class UserController {
                         ,"frontiernet.net"	,"hetnet.nl"	,"live.com.au"	,"yahoo.com.sg"	,"zonnet.nl"	,"club-internet.fr"	,"juno.com"	,"optusnet.cou"
                         ,"blueyonder.co.uk","bluewin.ch"	,"skynet.be"	,"sympatico.ca"	,"windstream.net"	,"mac.com"	,"centurytel.net"
                         ,"chello.nl"	,"live.ca"	,"aim.com"	,"bigpond.net.au"};
-        for (String domainNames:domainList             ) {
-            domains.add(domainNames);
 
-        }
+        Collections.addAll(domains, domainList);
         String id1,name1,mail1,company1,website1,status1,domain;
         for(int i=2;i<2000;i++){
             id1= String.valueOf(i);
@@ -187,7 +190,7 @@ public class UserController {
         }
         jsonData=jsonData+add+end;
         JSONParser parser = new JSONParser();
-        Object jsonObj = parser.parse(jsonData);
+        Object jsonObj =parser.parse(jsonData);
         JSONObject jsnobject = new JSONObject(jsonData);
         JSONArray jsonArray = (JSONArray) jsnobject.get("users");
         User u;
@@ -216,15 +219,21 @@ public class UserController {
     }
 
     @MutationMapping
-    public User updateUser(@Argument String id,@Argument  String name, @Argument String mail, @Argument String company, @Argument String website, @Argument String status){
-        User u = new User();
-        u.setId(id);
-        u.setName(name);
-        u.setMail(mail );
-        u.setCompany(company);
-        u.setWebsite(website);
-        u.setStatus(status);
-        return u;
+    public Boolean updateUser(@Argument(name= "input" ) UserInput userInput){
+        Optional<User> getUser =this.userRepo.findById(userInput.getId());
+        if(getUser.isPresent()){
+            User u = getUser.get();
+            u.setId(userInput.getId());
+            u.setName(userInput.getName());
+            u.setMail(userInput.getMail() );
+            u.setCompany(userInput.getCompany());
+            u.setWebsite(userInput.getWebsite());
+            u.setStatus(userInput.getStatus());
+            this.userRepo.save(u);
+        return true;}
+        else{
+            return false;
+        }
 
     }
 
@@ -250,18 +259,21 @@ public class UserController {
     }
 
     @MutationMapping
-    public Boolean createDistinctUser(@Argument String id, @Argument  String name, @Argument String mail, @Argument String company, @Argument String website, @Argument String status){
-        User u = new User();
-        u.setId(id);
-        u.setName(name);
-        u.setMail(mail );
-        u.setCompany(company);
-        u.setWebsite(website);
-        u.setStatus(status);
+    public Boolean createDistinctUser(@Argument(name= "input" ) UserInput userInput){
+        //Optional<User> getUser =this.userRepo.findById(userInput.getId());
+        //if(getUser.isPresent()){
+            User u = new User();
+            u.setId(userInput.getId());
+            u.setName(userInput.getName());
+            u.setMail(userInput.getMail() );
+            u.setCompany(userInput.getCompany());
+            u.setWebsite(userInput.getWebsite());
+            u.setStatus(userInput.getStatus());
+
         List<User> user = this.userRepo.findAll();
         String id1;
         for(User u1:user){
-            if(u1.getCompany().equals(u.getCompany())){
+            if((u1.getCompany().equals(u.getCompany()))||(u1.getId().equals(u.getId()))){
                 id1= u1.getId();
                 this.userRepo.findById(id1);
                 return false;
