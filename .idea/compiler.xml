@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="UserDetails" />
+        <module name="SpringBootCrud" />
+        <module name="jsonToArraylist" />
+        <module name="hackernews-graphql-java" />
+        <module name="PersonDetails (1) (com.CRUDApp)" />
+        <module name="graphql-test" />
+        <module name="PersonDetails (2) (org.example)" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="PersonDetails" target="1.5" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="PersonDetails (1) (com.CRUDApp)" options="-parameters" />
+      <module name="SpringBootCrud" options="-parameters" />
+      <module name="UserDetails" options="-parameters" />
+      <module name="graphql-test" options="-parameters" />
+    </option>
+  </component>
+</project>
