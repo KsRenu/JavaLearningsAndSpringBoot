@@ -51,6 +51,7 @@ public class UserController {
     }
 
     @QueryMapping
+    //implementing using stream filters and using default values for pageno and size if user doesn't provide it
     public List<User> ImgetStatus(@Argument String status,@Argument String pageNo,@Argument String size){
         List<User> u = new ArrayList<>();
         Pageable element;
@@ -61,7 +62,6 @@ public class UserController {
         log.info("No of users in this status are : {}",count);
         if( (pageNo!=null ) && (size!=null)) {
             element = PageRequest.of(Integer.parseInt(pageNo), Integer.parseInt(size));
-                        //return userStatus;
         }
         else{
             element = PageRequest.of(0, 10);
@@ -71,6 +71,7 @@ public class UserController {
     }
 
     @QueryMapping
+    //as the auto-generated data has repeated domains, removing them
     public List<User> removeRepeatedDomainUsers(){
         List<User> u = new ArrayList<>();
         u = this.userRepo.findAll();
@@ -84,33 +85,21 @@ public class UserController {
             if(!(distinctDomains.contains(domain.substring(index)))){
                 distinctDomains.add(domain.substring(index));
             }
-
         }
         boolean f = true;
         int x=0;
         for (String distinctDomain : distinctDomains) {
             f = true;
-            //x=0;
             for (User mail : u) {
-                //for(int j=0;j<u.size();j++){
-                //index = u.get(j).getMail().indexOf('@');
                 index = mail.getMail().indexOf('@');
-                //if(u.get(j).getMail().substring(index).equals(distinctDomains.get(i))){
                 if (mail.getMail().substring(index).equals(distinctDomain)) {
-                    //u.remove(mail);
                     if (f) {
                         f = false;
                         unew.add(mail);
-                        //x++;
                     }
-                    //else {
-                    // u.set(x,null);
-                    // x++;
-                    //}
                 }
 
             }
-            //while (u.removeIf(null));
         }
         this.userRepo.deleteAll();
 
@@ -118,7 +107,6 @@ public class UserController {
         log.info("No.of.distinct domain users are: {}",u.size());
 
         return  this.userRepo.saveAll(u);
-        //u=u.stream().filter(user->(user.getMail()).substring(indexOf("@"))).distinct();
 
     }
 
@@ -139,6 +127,8 @@ public class UserController {
 
 
     @MutationMapping
+    //adding sample data to the database for 2000 rows auto-generated with pre-defined status values
+    //varying from 0 to 4 and varying 100 domain values
     public Iterable<User> addUsers() throws ParseException {
 //        String jsonData = "{\"users\":[{\"id\":\"1\",\"name\":\"name1\",\"mail\":\"mail1@gmail.com\",\"company\":\"company1\",\"website\":\"website1.com\",\"status\":\"1\"}," +
 //                "{\"id\":\"2\",\"name\":\"name2\",\"mail\":\"mail2@gmail.com\",\"company\":\"company2\",\"website\":\"website2.com\",\"status\":\"2\"}," +
@@ -175,7 +165,6 @@ public class UserController {
                         ,"frontiernet.net"	,"hetnet.nl"	,"live.com.au"	,"yahoo.com.sg"	,"zonnet.nl"	,"club-internet.fr"	,"juno.com"	,"optusnet.cou"
                         ,"blueyonder.co.uk","bluewin.ch"	,"skynet.be"	,"sympatico.ca"	,"windstream.net"	,"mac.com"	,"centurytel.net"
                         ,"chello.nl"	,"live.ca"	,"aim.com"	,"bigpond.net.au"};
-
         Collections.addAll(domains, domainList);
         String id1,name1,mail1,company1,website1,status1,domain;
         for(int i=2;i<2000;i++){
@@ -203,14 +192,8 @@ public class UserController {
             String website = (String) obj.get("website");
             String status= (String)obj.get("status");
             u = new User(id, name, mail, company, website, status);
-            //if(userRepo.existsById(id)){
-            //  continue;
-            //}else{
             this.userRepo.save(u);
         }
-        //}
-
-
         return this.userRepo.findAll();
     }
     @MutationMapping
@@ -220,7 +203,7 @@ public class UserController {
 
     @MutationMapping
     public Boolean updateUser(@Argument(name= "input" ) UserInput userInput){
-        Optional<User> getUser =this.userRepo.findById(userInput.getId());
+        Optional<User> getUser =this.userRepo.findById(userInput.getId());//checking whether if that user with that id exist
         if(getUser.isPresent()){
             User u = getUser.get();
             u.setId(userInput.getId());
@@ -246,6 +229,7 @@ public class UserController {
 
 
     @MutationMapping
+    //removing particular group of users with the mentioned domain
     public Boolean removeUserWithDomain(@Argument String domain ){
         List<User> u = new ArrayList<>();
         u = this.userRepo.findAll();
@@ -255,13 +239,11 @@ public class UserController {
         log.info("No of users in this domain are : {}",count);
         this.userRepo.deleteAll(userMail);
         return true;
-                //return userMail;
     }
 
     @MutationMapping
+    //distinct users from distinct companies
     public Boolean createDistinctUser(@Argument(name= "input" ) UserInput userInput){
-        //Optional<User> getUser =this.userRepo.findById(userInput.getId());
-        //if(getUser.isPresent()){
             User u = new User();
             u.setId(userInput.getId());
             u.setName(userInput.getName());
@@ -269,10 +251,10 @@ public class UserController {
             u.setCompany(userInput.getCompany());
             u.setWebsite(userInput.getWebsite());
             u.setStatus(userInput.getStatus());
-
         List<User> user = this.userRepo.findAll();
         String id1;
         for(User u1:user){
+            // cheking whether the id or company already exists in the db
             if((u1.getCompany().equals(u.getCompany()))||(u1.getId().equals(u.getId()))){
                 id1= u1.getId();
                 this.userRepo.findById(id1);
@@ -282,9 +264,6 @@ public class UserController {
         this.userRepo.save(u);
         return true;
     }
-
-
-
     }
 
 
